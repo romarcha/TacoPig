@@ -101,7 +101,6 @@ classdef Regressor < tacopig.gp.GpCore
                 this.K = K; 
                 this.factors.L = L;
                 this.factors.type = 'chol';
-                this.mu = mu;
             else
                 error('tacopig:badConfiguration','Invalid factorisation method.');    
             end
