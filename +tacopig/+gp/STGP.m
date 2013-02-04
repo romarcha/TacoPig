@@ -354,13 +354,13 @@ classdef STGP < tacopig.gp.GpCore
             % Returns error if a property of the GP class has been initialised incorrectly
             % STGP.check()
         
-            CheckSpaceTimeInput(this.X);
+            this.CheckSpaceTimeInput(this.X);
             [D,N] = size(this.X.s);
             use_svd = strcmpi(this.factorisation, 'svd');
             use_chol = strcmpi(this.factorisation, 'chol');
             if ((use_svd==0)&&(use_chol==0))
                 error('tacopig:badConfiguration', 'Matrix factorisation should either be SVD or CHOL\n');
-            elseif ~isa(this.MeanFn,'tacopig.meanfn.MeanFunc')
+            elseif ~isa(this.MeanFn,'tacopig.meanfn.STMeanFunc')
                 error('tacopig:badConfiguration', 'Invalid Mean Function\n');
             elseif ~isa(this.CovFn,'tacopig.covfn.STCovFunc')
                 error('tacopig:badConfiguration', 'Invalid Covariance Function\n');
@@ -417,7 +417,7 @@ classdef STGP < tacopig.gp.GpCore
             disp([analytic;numerical]);
         end
         
-        function CheckSpaceTimeInput(X)
+        function CheckSpaceTimeInput(this,X)
             if(isa(X,'struct'))
                 if(~isfield(X,'s'))
                     error('STGP X does not have space field (s)');

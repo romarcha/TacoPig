@@ -31,7 +31,11 @@ classdef Stationary < tacopig.noisefn.NoiseFunc
             %         GP = The GP class instance can be passed to give the noise function access to its properties
             % Outputs : noise matrix (N x N)
             par = tacopig.noisefn.NoiseFunc.getNoisePar(GP);
-            [D,N] = size(X); %N number of points in X
+            if(~isstruct(X))
+                [D,N] = size(X); %N number of points in X
+            else
+                [D,N] = size(X.s);
+            end
             noise = par^2*eye(N);
         end
         
@@ -47,7 +51,11 @@ classdef Stationary < tacopig.noisefn.NoiseFunc
             % For this class g is a 1 x NumberOfNoiseParameters cell array with the element being a N x N matrix (the gradient of the noise matrix with respect to the ith parameter).
          
             par = tacopig.noisefn.NoiseFunc.getNoisePar(GP);
-            [D,N] = size(X); %N number of points in X
+            if(~isstruct(X))
+                [D,N] = size(X); %N number of points in X
+            else
+                [D,N] = size(X.s);
+            end
             g = {2*par*eye(N)};
         end
 

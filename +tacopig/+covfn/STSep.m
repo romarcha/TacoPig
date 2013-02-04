@@ -9,7 +9,7 @@
 % exponential covariance function is used for space and the Matern3 cov
 % function is used for time.
 
-classdef STSep < tacopig.covfn.CovFunc
+classdef STSep < tacopig.covfn.STCovFunc
     
     properties(Constant)
         ExampleUsage = 'tacopig.covfn.STSep(tacopig.covfn.SqExp(),tacopig.covfn.Mat3());'; %Instance of class created for testing
@@ -74,8 +74,8 @@ classdef STSep < tacopig.covfn.CovFunc
             par = this.getCovPar(GP);
             
             % Check that X1 and X2 have the required properties:
-            CheckSpaceTimeInput(X1);
-            CheckSpaceTimeInput(X2);
+            this.CheckSpaceTimeInput(X1);
+            this.CheckSpaceTimeInput(X2);
 
             D = size(X1.s,1); %spatial dimensionaly of points in X1
             
@@ -90,11 +90,12 @@ classdef STSep < tacopig.covfn.CovFunc
             end
             
             %Calculate the spatial component of the covariance matrix
-            K = this.sCovFunc.eval(X1,X2, par(1:this.sCovFunc.npar(D)));
+            K = this.sCovFunc.eval(X1.s,X2.s, par(1:this.sCovFunc.npar(D)));
+            left = this.sCovFunc.npar(D)+1;
             
             %Calculate the temporal component and multiply it with the 
             %spatial one.
-            K = K.*this.tCovFunc.eval(X1,X2, par(this.sCovFunc.npar(D)+1:this.tCovFunc.npar(1)));
+            K = K.*this.tCovFunc.eval(X1.t,X2.t, par(left:end));
             
         end
         
@@ -117,12 +118,10 @@ classdef STSep < tacopig.covfn.CovFunc
 
             par = this.getCovPar(GP);
             
-            % Check that X1 and X2 have the required properties:
-            CheckSpaceTimeInput(X1);
-            CheckSpaceTimeInput(X2);
-
-
-            D = size(X.s,1); %number of points in X1
+            % Check that X is proper structure
+            this.CheckSpaceTimeInput(X);
+            
+            D = size(X.s,1); %dimension of X
             
             npar = length(par);
             if (npar~=this.npar(D))
@@ -130,11 +129,11 @@ classdef STSep < tacopig.covfn.CovFunc
             end
 
             %Calculate the spatial component of the covariance matrix
-            K = this.sCovFunc.Keval(X, par(1:this.sCovFunc.npar(D)));
+            K = this.sCovFunc.Keval(X.s, par(1:this.sCovFunc.npar(D)));
             left = this.sCovFunc.npar(D)+1;
             %Calculate the temporal component and multiply it with the 
             %spatial one.
-            K = K.*this.tCovFunc.Keval(X, par(left:left+this.tCovFunc.npar(1)));
+            K = K.*this.tCovFunc.Keval(X.t, par(left:end));
         end
         
         % Overload the point covariance - its trivial to add them
@@ -156,9 +155,30 @@ classdef STSep < tacopig.covfn.CovFunc
                 error('tacopig:inputInvalidLength','Wrong number of hyperparameters for NegExp');
             end
             
-            v = this.sCovFunc.pointval(x_star,par(1:this.sCovFunc.npar(D)));
+            v = this.sCovFunc.pointval(x_star.s,par(1:this.sCovFunc.npar(D)));
             left = this.sCovFunc.npar(D)+1;
-            v = v.*this.tCovFunc.pointval(x_star,par(left:left+this.tCovFunc.npar(1)));
+            v = v.*this.tCovFunc.pointval(x_star.t,par(left:end));
+            
+        end
+        
+        function g = gradient(this,X, GP)
+         % Returns gradient of the covariance matrix k(X,X) with respect to each hyperparameter
+        % g = Gp.CovFn.gradient(X, GP)
+        %
+        % Gp.CovFn is an instantiation of the Sum covariance function class
+        %
+        % Inputs:   X = Input locations (D x N matrix)
+        %           GP = The GP class instance can be passed to give the covariance function access to its properties
+        % Outputs:  g = gradient of the covariance matrix k(X,X) with respect to each hyperparameter. Cell Array (1 x Number of Hyperparameters). Each Element is a N x N matrix
+
+            par = this.getCovPar(GP);
+            [D,~] = size(X.s);
+            glist = cell(2,1);
+            glist{1} = this.sCovFunc.gradient(X.s, par(1:this.sCovFunc.npar(D)) );
+            left = this.sCovFunc.npar(D)+1;
+            glist{2} = this.tCovFunc.gradient(X.t, par(left:end) );
+            
+            g = cat(2,glist{:}); % be careful to concatenate along the right dimension...
             
         end
         

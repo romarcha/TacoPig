@@ -15,7 +15,11 @@ function [nlml, nlmlg] = NLML(this, parvec)
 %           need_grad = strcmpi(optimget(this.opts,'GradObj'),'on');
             
             % Unpack the parameters
-            D = size(this.X,1);
+            if(~isstruct(this.X))
+                D = size(this.X,1);
+            else
+                D = size(this.X.s,1);
+            end
             ncovpar = this.CovFn.npar(D);
             nmeanpar = this.MeanFn.npar(D);
             nnoisepar = this.NoiseFn.npar;

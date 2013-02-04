@@ -64,7 +64,7 @@ classdef STCovFunc < tacopig.taco
             end
         end
         
-        function CheckSpaceTimeInput(X)
+        function CheckSpaceTimeInput(this,X)
             if(isa(X,'struct'))
                 if(~isfield(X,'s'))
                     error('STSep::eval X does not have space field (s)');
