@@ -63,7 +63,7 @@ classdef SqExp < tacopig.covfn.CovFunc
         % Outputs: K = covariance matrix between input sets X1,X2 (N x M)
         
             par = this.getCovPar(GP);
-            [D,N1] = size(X1); %number of points in X1
+            [D,N1] = size(X1); %dimensionality and number of points in X1
             N2 = size(X2,2); %number of points in X2
             if D~=size(X2,1)
                 error('tacopig:dimMismatch','Dimensionality of X1 and X2 must be the same');

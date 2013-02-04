@@ -1,9 +1,19 @@
-% Standard GP-regression model
+% Space-Time GP model
+%
+% The structure for the data is not as regurlarly with other GP models.
+% This kind of GP uses a struct type of data for X, where two fields are
+% present, field 's' and file 't' that represent the space and time 
+% components of the data respectively.
+% X    - Struct with fields 's' and 't':
+% X.s  - D x N input points locations 1
+% X.t  - 1 x N input points timestamps 1
+%
+% ConFunc must be of type STCovFunc.
 %
 % Example instantiation
-% GP = tacopig.gp.Regressor;
-% This creates a instance of a Gaussian process regressor called GP.
-classdef Regressor < tacopig.gp.GpCore
+% STGP = tacopig.gp.STGP;
+% This creates a instance of a Space Time Gaussian process regressor called GP.
+classdef STGP < tacopig.gp.GpCore
     
     properties
         mu                  % Evaluated Mean
@@ -28,10 +38,10 @@ classdef Regressor < tacopig.gp.GpCore
     methods
  
         
-        function this = Regressor()
+        function this = STGP()
         % Constructor - default settings
         %
-        % this = Regressor()
+        % this = STGP()
         %
         % Defaults:
         %          factorisation = 'chol';
@@ -61,15 +71,15 @@ classdef Regressor < tacopig.gp.GpCore
         
         
         function solve(this)
-        % Calculates and caches the key matrices required for GP inference
-        % e.g. The covariance matrix and its factorisation, the mean
-        % function, the negativel log marginal likelihood value
-        %
-        % function Regressor.solve()
-        % 
-        %
-        % Uses svd or cholesky decomposition (depending on value of the
-        % property "factorisation" to perform GP inference). 
+            % Calculates and caches the key matrices required for GP inference
+            % e.g. The covariance matrix and its factorisation, the mean
+            % function, the negativel log marginal likelihood value
+            %
+            % function Regressor.solve()
+            % 
+            %
+            % Uses svd or cholesky decomposition (depending on value of the
+            % property "factorisation" to perform GP inference). 
         
         
             % Check validity of current configuration
@@ -113,28 +123,31 @@ classdef Regressor < tacopig.gp.GpCore
 
         
         function [mu_star, var_star, var_full] = query(this, x_star, NumBatches)
-        % Query the model after it has been solved
-        %
-        % [mu_star, var_star, var_full] = Regressor.query(x_star, batches)
-        %
-        % Inputs:   x_star = test points
-        %           NumBatches = the number of batches that the test points are broken up into. Default = 1
-        % Outputs:  mu_star ( predictive mean at the query points)
-        %           var_star ( predictive variance at the query points)
-        %           var_ful ( the full covariance matrix between all query points )
+            % Query the model after it has been solved
+            %
+            % [mu_star, var_star, var_full] = Regressor.query(x_star, batches)
+            %
+            % Inputs:   x_star = test points is a struct 
+            %           x_star.s = space locations of points array
+            %           x_star.t = timestamps for test data.
+            %           NumBatches = the number of batches that the test points are broken up into. Default = 1
+            % Outputs:  mu_star ( predictive mean at the query points)
+            %           var_star ( predictive variance at the query points)
+            %           var_ful ( the full covariance matrix between all query points )
         
             % The user can (optionally) split the data into batches)
             if (nargin<3)
                 NumBatches = 1;
             end
+            
             if (~this.has_been_solved)
                 error('tacopig:badConfiguration', 'GP must be solved first using GP.solve.');
             end
             this.check();
             
             % Get input lengths
-            N = size(this.X,2); 
-            nx = size(x_star,2);
+            N = size(this.X.s,2); 
+            nx = size(x_star.s,2);
             
             if abs(round(NumBatches)-NumBatches)>1e-16
                 error('tacopig:inputInvalidType', 'Batches must be an integer');
@@ -192,13 +205,16 @@ classdef Regressor < tacopig.gp.GpCore
                     fprintf('%d to %d...\n',L, R);
                 end
                 
+                % The test set for this batch
+                x_star_active = struct('s',x_star.s(:,LR),'t',x_star.t(:,LR));
+                
                 % Compute Predictive Mean
-                ks = this.CovFn.eval(this.X,x_star(:,LR),this)';
+                ks = this.CovFn.eval(this.X,x_star_active,this)';
                 mu_star(LR) = mu_0(LR) + (ks*this.alpha)';
 
                 if (nargout>=2)
                     % Compute predictive variance
-                    var0 = this.CovFn.pointval(x_star(:,LR), this);
+                    var0 = this.CovFn.pointval(x_star_active, this);
                     if use_svd
                         %S2 = S2(:,ones(1,size(x_star(:,LR),2)));
                         v = bsxfun(@times, factorS, (ks*this.factors.SVD_U)');
@@ -213,7 +229,7 @@ classdef Regressor < tacopig.gp.GpCore
                         % we also want the block
                         % Can only get here if batches is set to 1
                         
-                        var0 = this.CovFn.Keval(x_star(:,LR), this);
+                        var0 = this.CovFn.Keval(x_star_active, this);
                         var_full = var0-v'*v;
                     end
                 end
@@ -244,7 +260,7 @@ classdef Regressor < tacopig.gp.GpCore
              
              
             % Unpack the parameters again to save them:   
-            D = size(this.X,1);
+            D = size(this.X.s,1);
             ncovpar = this.CovFn.npar(D);
             nmeanpar = this.MeanFn.npar(D);
             nnoisepar = this.NoiseFn.npar;
@@ -270,7 +286,7 @@ classdef Regressor < tacopig.gp.GpCore
         %
         % Output: f_star (a sample from the prior at the query points)
             this.check();
-            nx = size(x_star,2);  
+            nx = size(x_star.s,2);  
             if (nx>3000)&&this.verbose
                 disp(['Warning: Large number of query points.'...
                     'This may result in considerable computational time.'...
@@ -299,8 +315,8 @@ classdef Regressor < tacopig.gp.GpCore
                 error('GP must be solved first using GP.solve().');
             end
             
-            nx = size(x_star,2);  
-            N  = size(this.X,2);
+            nx = size(x_star.s,2);  
+            N  = size(this.X.s,2);
             if (nx+N)>20000
                 disp(['Warning: Large number of query points.'...
                     'This may result in considerable computational time.'...
@@ -335,17 +351,18 @@ classdef Regressor < tacopig.gp.GpCore
         end
         
         function check(this)
-        % Returns error if a property of the GP class has been initialised incorrectly
-        % Regressor.check()
+            % Returns error if a property of the GP class has been initialised incorrectly
+            % STGP.check()
         
-            [D,N] = size(this.X);
+            CheckSpaceTimeInput(this.X);
+            [D,N] = size(this.X.s);
             use_svd = strcmpi(this.factorisation, 'svd');
             use_chol = strcmpi(this.factorisation, 'chol');
             if ((use_svd==0)&&(use_chol==0))
                 error('tacopig:badConfiguration', 'Matrix factorisation should either be SVD or CHOL\n');
             elseif ~isa(this.MeanFn,'tacopig.meanfn.MeanFunc')
                 error('tacopig:badConfiguration', 'Invalid Mean Function\n');
-            elseif ~isa(this.CovFn,'tacopig.covfn.CovFunc')
+            elseif ~isa(this.CovFn,'tacopig.covfn.STCovFunc')
                 error('tacopig:badConfiguration', 'Invalid Covariance Function\n');
             elseif (size(this.y,1) ~= 1)
                 error('tacopig:dimMismatch', 'Y is transposed?\n');
@@ -398,6 +415,19 @@ classdef Regressor < tacopig.gp.GpCore
             analytic = analytic';
             fprintf('Analytic (top), Numerical (bottom)\n');
             disp([analytic;numerical]);
+        end
+        
+        function CheckSpaceTimeInput(X)
+            if(isa(X,'struct'))
+                if(~isfield(X,'s'))
+                    error('STGP X does not have space field (s)');
+                end
+                if(~isfield(X,'t'))
+                    error('STGP X does not have time field (t)');
+                end
+            else
+                error('STGP X is not space-time data');
+            end
         end
     end
 end    

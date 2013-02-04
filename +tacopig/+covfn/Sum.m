@@ -107,7 +107,7 @@ classdef Sum < tacopig.covfn.CovFunc
          % Outputs: K = covariance matrix between input sets X and itself (N x N)
             
             par = this.getCovPar(GP);
-            D = size(X,1); %number of points in X1
+            D = size(X,1); %dimensionality of points in X1
             npar = length(par);
             if (npar~=this.npar(D))
                 error('tacopig:inputInvalidLength','Wrong number of hyperparameters for NegExp');

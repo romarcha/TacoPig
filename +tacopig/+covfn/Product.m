@@ -65,7 +65,7 @@ classdef Product < tacopig.covfn.CovFunc
             % Outputs: K = covariance matrix between input sets X1,X2 (N x M) 
             
             par = this.getCovPar(GP);
-            D = size(X1,1); % number of points in X1
+            D = size(X1,1); % dimensionality of points in X1
             if D~=size(X2,1)
                 error('tacopig:dimMismatch', 'Dimensionality of X1 and X2 must be the same');
             end
