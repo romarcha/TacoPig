@@ -166,7 +166,7 @@ while ~finished;
         else
             T = cool(T);  % decrease T according to cooling schedule
             if report==2, % output
-                fprintf(1,'  T = %7.5f, loss = %10.5f\n',T,oldenergy);
+                fprintf(1,'  T = %7.9f, loss = %10.1f\n',T,oldenergy);
             end
             total = total + itry;
             itry = 1;

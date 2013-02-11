@@ -29,6 +29,7 @@ classdef ExpPeriodic < tacopig.covfn.CovFunc
             % Exp covariance function constructor
             % GP.CovFn = tacopig.covfn.Mat3()
             % Gp.CovFn is an instantiation of the SqExp covariance function class 
+
         end    
         
         function n_theta = npar(this, D)
@@ -63,12 +64,18 @@ classdef ExpPeriodic < tacopig.covfn.CovFunc
             if (length(par)~=D+1)
                 error('tacopig:inputInvalidLength','Wrong number of hyperparameters for NegExp');
             end
-            K = zeros(N1,N2);
-            for i = 1:N1
-                for j = 1:N2
-                    K(i,j) = (par(D+1)^2)*exp(-(sin((pi/par(1))*abs(X1(:,i)-X2(:,j))))^2);
-                end
-            end
+            X1T = X1';
+            z = X1T(:,ones(1,N2)) - X2(ones(1,N1),:);
+            K = (par(D+1)^2)*exp(-2*(sin(pi*z./24)).^2/par(1));
+            
+%             K = zeros(N1,N2);
+%             for i = 1:N1
+%                 for j = 1:N2
+%                     diff = X1(:,i)-X2(:,j);
+%                     periodic_comp =  -2*(sin(pi*diff/12)^2)/par(1);
+%                     K(i,j) = (par(D+1)^2)*exp(periodic_comp);
+%                 end
+%             end
             
         end
         
@@ -82,26 +89,27 @@ classdef ExpPeriodic < tacopig.covfn.CovFunc
             %           GP = The GP class instance can be passed to give the covariance function access to its properties
             % Outputs:  g = gradient of the covariance matrix k(X,X) with respect to each hyperparameter. Cell Array (1 x Number of Hyperparameters). Each Element is a N x N matrix
             
-            par = this.getCovPar(GP);
-            %Gradient currently not working correctly.
-            epsilon = 1e-10; 
-            % Same as K?
-            [Kg z] = this.eval(X, X, par);
-            z = z+epsilon*eye(size(z)); %jitter added to avoid divide by zero
-            [d,n] = size(X);
-            g = cell(1,d+1);
-            for i=1:d
- 
-            %Compute weighted squared distance
-                row = X(i,:);
-                XXi = row.*row;
-                XTXi = row'*row;
-                XXi = XXi(ones(1,n),:);
-                zi = max(0,XXi+XXi'-2*XTXi); %zi is not normalised by l
-                wi = par(i)^(-3);
-                g{i} = par(d+1)^2.*zi.* wi.*(z).^(-0.5).*exp(-sqrt(z));
-            end
-            g{d+1} = Kg*(2/par(d+1));
+            error('ExpPeriodic: Error, gradient not defined yet.');
+%             par = this.getCovPar(GP);
+%             %Gradient currently not working correctly.
+%             epsilon = 1e-10; 
+%             % Same as K?
+%             [Kg z] = this.eval(X, X, par);
+%             z = z+epsilon*eye(size(z)); %jitter added to avoid divide by zero
+%             [d,n] = size(X);
+%             g = cell(1,d+1);
+%             for i=1:d
+%  
+%             %Compute weighted squared distance
+%                 row = X(i,:);
+%                 XXi = row.*row;
+%                 XTXi = row'*row;
+%                 XXi = XXi(ones(1,n),:);
+%                 zi = max(0,XXi+XXi'-2*XTXi); %zi is not normalised by l
+%                 wi = par(i)^(-3);
+%                 g{i} = par(d+1)^2.*zi.* wi.*(z).^(-0.5).*exp(-sqrt(z));
+%             end
+%             g{d+1} = Kg*(2/par(d+1));
         end
         
         
