@@ -66,7 +66,7 @@ classdef ExpPeriodic < tacopig.covfn.CovFunc
             end
             X1T = X1';
             z = X1T(:,ones(1,N2)) - X2(ones(1,N1),:);
-            K = (par(D+1)^2)*exp(-2*(sin(pi*z./24)).^2/par(1));
+            K = (par(D+1)^2)*exp(-2*(sin(pi*z./1)).^2/par(1));
             
 %             K = zeros(N1,N2);
 %             for i = 1:N1

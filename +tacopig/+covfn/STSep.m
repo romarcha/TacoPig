@@ -148,7 +148,7 @@ classdef STSep < tacopig.covfn.STCovFunc
             
             par = this.getCovPar(GP);
             
-            [D] = size(x_star);
+            [D] = size(x_star.s,1);
             
             npar = length(par);
             if (npar~=this.npar(D))
