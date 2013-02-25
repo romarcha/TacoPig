@@ -19,17 +19,24 @@
 
 classdef ExpPeriodic < tacopig.covfn.CovFunc
       
+    properties
+        period;
+    end
+    
     properties(Constant)
         ExampleUsage = 'tacopig.covfn.Exp()'; %Instance of class created for testing
     end
       
     methods
 
-        function this = ExpPeriodic() 
+        function this = ExpPeriodic(period_) 
             % Exp covariance function constructor
-            % GP.CovFn = tacopig.covfn.Mat3()
-            % Gp.CovFn is an instantiation of the SqExp covariance function class 
-
+            % GP.CovFn = tacopig.covfn.ExpPeriodic()
+            % Gp.CovFn is an instantiation of the ExpPeriodic covariance function class 
+            if nargin == 0
+                error('ExpPeriodic need the period to be specified a priori.');
+            end
+            this.period = period_;
         end    
         
         function n_theta = npar(this, D)
@@ -66,17 +73,7 @@ classdef ExpPeriodic < tacopig.covfn.CovFunc
             end
             X1T = X1';
             z = X1T(:,ones(1,N2)) - X2(ones(1,N1),:);
-            K = (par(D+1)^2)*exp(-2*(sin(pi*z./1)).^2/par(1));
-            
-%             K = zeros(N1,N2);
-%             for i = 1:N1
-%                 for j = 1:N2
-%                     diff = X1(:,i)-X2(:,j);
-%                     periodic_comp =  -2*(sin(pi*diff/12)^2)/par(1);
-%                     K(i,j) = (par(D+1)^2)*exp(periodic_comp);
-%                 end
-%             end
-            
+            K = (par(D+1)^2)*exp(-2*(sin(pi*z./this.period)).^2/par(1));            
         end
         
         function [g] = gradient(this, X, GP)
