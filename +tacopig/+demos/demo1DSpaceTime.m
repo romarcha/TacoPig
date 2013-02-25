@@ -65,7 +65,7 @@ GP.y = y;
 
 % Plug in the components
 GP.MeanFn = tacopig.meanfn.STStationaryMean();
-GP.CovFn   = tacopig.covfn.STSep(tacopig.covfn.SqExp,tacopig.covfn.ExpPeriodic);
+GP.CovFn   = tacopig.covfn.STSep(tacopig.covfn.SqExp,tacopig.covfn.ExpPeriodic(2));
 GP.NoiseFn = tacopig.noisefn.Stationary();
 GP.objective_function = @tacopig.objectivefn.NLML;
 

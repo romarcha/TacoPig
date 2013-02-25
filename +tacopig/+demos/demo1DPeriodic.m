@@ -42,7 +42,7 @@ figure;
 plot(GT_locations,GTy);
 
 %% Training Data
-N = 10; %Number of training Points.
+N = 30; %Number of training Points.
 
 X = goal_function.GetRandomEvaluationLocations(N);
 y = goal_function.GetNoisySample(X);
@@ -66,7 +66,7 @@ GP.y = y;
 
 % Plug in the components
 GP.MeanFn = tacopig.meanfn.StationaryMean();
-GP.CovFn   = tacopig.covfn.Sum(tacopig.covfn.ExpPeriodic(),tacopig.covfn.SqExp());
+GP.CovFn   = tacopig.covfn.Sum(tacopig.covfn.ExpPeriodic(2),tacopig.covfn.SqExp());
 GP.NoiseFn = tacopig.noisefn.Stationary();
 GP.objective_function = @tacopig.objectivefn.NLML;
 
