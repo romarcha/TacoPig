@@ -40,6 +40,10 @@ function [nlml, nlmlg] = NLML(this, parvec)
                 noise = this.NoiseFn.eval(this.X, this);
             %end
             
+            if(issparse(K))
+                noise = sparse(noise);
+            end
+            
             K = K + noise;
             mu = this.MeanFn.eval(this.X, this); 
             ym = this.y-mu;

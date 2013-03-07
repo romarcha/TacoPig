@@ -80,6 +80,10 @@ classdef Regressor < tacopig.gp.GpCore
             K0 = this.CovFn.Keval(this.X, this);
             noise = this.NoiseFn.eval(this.X, this);
             
+            if(issparse(K0))
+                noise = sparse(noise);
+            end
+            
             K = K0 + noise;
             ym = (this.y - mu)';
             
