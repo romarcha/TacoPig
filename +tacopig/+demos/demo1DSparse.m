@@ -1,7 +1,17 @@
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%                       Gaussian Process Demo Script
-%  Demonstrates GP regression using the taco-pig toolbox on 1-D Data.
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%
+% Gaussian Process Demo Script for Sparse Covariance Function
+%
+% By defining a particular cutoff value, we can make covariance functions
+% sparse. Multiplying with the triangular covariance function
+% k(x,x') = max(0,1-((norm(x,x')^v)/theta)).
+% This can help us create a sparse covariance function where only non-zero
+% values are stored and therefore, larger matrixes can be stored and
+% inverted.
+%
+% This example compares the use of this technique, however, not very much
+% is gained by this sparcification in terms of speeding up. Therefore, the
+% kdtree option is implemented on another example demo.
+%
 
 %Add optimization folder
 if ~exist('minfunc')

@@ -1,7 +1,14 @@
 %%
-%                       Sparse GP Demo
-%                       Using KdTrees for
-%                       Nearest Neighbors
+% Gaussian Process Demo Script for Knn
+%
+% In this demo, a kdtree structure is used to 
+% organize a large amount of datapoints. Assuming that 'near' datapoints
+% are correlated strongly, for each prediction point, the covariance matrix
+% is only built with a subset of points, using the k-nearest-neighbors
+% given by the kd-tree structure.
+%
+% To do: include the kdtree structure inside a special kind of GP called 
+%
 
 %Add optimization folder
 if ~exist('minfunc')
