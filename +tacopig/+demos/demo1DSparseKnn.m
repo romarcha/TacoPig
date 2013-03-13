@@ -40,11 +40,11 @@ goalFunction.limits.high = 1;
 %%
 % Set the gaussian noise parameters when sampling the function
 goalFunction.noiseMean = 0;
-goalFunction.noiseStd = 0.1;
+goalFunction.noiseStd = 0.3;
 
 %%
 % Plot of the goal function values
-numberOfSamples = 100;
+numberOfSamples = 10000;
 %figure;
 %goalFunction.Plot(numberOfSamples);
 
@@ -60,7 +60,7 @@ numberOfSamples = 100;
 
 %%
 % Number of sample points
-N = 30;
+N = 80000;
 
 %%
 % Location of sample points
@@ -106,7 +106,7 @@ GP.meanpar  = zeros(1,GP.MeanFn.npar(size(X,1)));
 GP.noisepar = 0.0983;
 
 %% Query
-knn = 30;
+knn = 400;
 m_f = zeros(1,length(xstar));
 v_f = zeros(1,length(xstar));
 s_f = zeros(1,length(xstar));
@@ -130,7 +130,6 @@ f  = [m_f+2*(s_f),flipdim(m_f-2*(s_f),2)]';
 h(1) = fill([xstar, flipdim(xstar,2)], f, [6 6 6]/8, 'EdgeColor', [6 6 6]/8);
 hold on
 h(2) = plot(xstar,m_f,'k-','LineWidth',2);
-
 figure;
-h(3) = plot(X, y, 'k+');
+h(3) = plot(X, y, 'k.');
 
