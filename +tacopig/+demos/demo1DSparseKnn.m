@@ -47,13 +47,12 @@ goalFunction.limits.high = 1;
 %%
 % Set the gaussian noise parameters when sampling the function
 goalFunction.noiseMean = 0;
-goalFunction.noiseStd = 0.3;
+goalFunction.noiseStd = 0.4;
 
 %%
 % Plot of the goal function values
-numberOfSamples = 10000;
 %figure;
-%goalFunction.Plot(numberOfSamples);
+%goalFunction.Plot(1000);
 
 %% Learn the GP model hyperparameters
 % As it is stated in the state of the art, the function is randomnly
@@ -67,7 +66,7 @@ numberOfSamples = 10000;
 
 %%
 % Number of sample points
-N = 80000;
+N = 110000;
 
 %%
 % Location of sample points
@@ -107,20 +106,34 @@ GP.NoiseFn = tacopig.noisefn.Stationary();
 GP.objective_function = @tacopig.objectivefn.NLML;
 GP.opts.numDiff = 1; %Derivatives are calculated numerically
 
-%Already learnt hyper parameters.
+%Initial HyperParameters
 GP.covpar   = [0.0713,0.5575];
 GP.meanpar  = zeros(1,GP.MeanFn.npar(size(X,1)));
 GP.noisepar = 0.0983;
+
+% Learn hyperparameters from random 700 points
+n_train_hyper = 700;
+if(length(X) > n_train_hyper)
+    indexes = randsample(length(X),n_train_hyper);
+    GP.X = X(:,indexes);
+    GP.y = y(indexes);
+else
+    GP.X = X;
+    GP.y = y;
+end
+GP.solve();
+GP.learn();
 
 %% Query
 knn = 400;
 m_f = zeros(1,length(xstar));
 v_f = zeros(1,length(xstar));
 s_f = zeros(1,length(xstar));
+s_f_noise = zeros(1,length(xstar));
+knn_params.algorithm = 'linear';
+flann_set_distance_type(1);
+[index, parameters] = flann_build_index(X, knn_params);
 for i = 1:length(xstar)
-    knn_params.algorithm = 'linear';
-    flann_set_distance_type(1);
-    [index, parameters] = flann_build_index(X, knn_params);
     [result, dists] = flann_search(index,xstar(i),knn,parameters);
     
     % Plug in the data
@@ -129,6 +142,7 @@ for i = 1:length(xstar)
     GP.solve();
     [m_f(i), v_f(i)] = GP.query(xstar(i));
     s_f(i)  = sqrt(v_f(i));
+    s_f_noise(i)  = sqrt(v_f(i)+GP.noisepar^2);
 end
 
 %% Display learnt model
@@ -137,6 +151,12 @@ f  = [m_f+2*(s_f),flipdim(m_f-2*(s_f),2)]';
 h(1) = fill([xstar, flipdim(xstar,2)], f, [6 6 6]/8, 'EdgeColor', [6 6 6]/8);
 hold on
 h(2) = plot(xstar,m_f,'k-','LineWidth',2);
-figure;
-h(3) = plot(X, y, 'k.');
+h(2) = plot(xstar,m_f+2*(s_f_noise),'k:','LineWidth',2);
+h(2) = plot(xstar,m_f-2*(s_f_noise),'k:','LineWidth',2);
+if length(X) > 600
+    h(3) = plot(X, y, 'k.');
+else
+    h(3) = plot(X, y, 'ko');
+end
+goalFunction.Plot(1000);
 
