@@ -37,6 +37,9 @@ classdef GPKdTree < tacopig.gp.GpCore
         invK                % Inverse of K_m
         palpha              % Pseudo alpha (alpha_m in book)
 
+        knn_params
+        kd_tree_parameters
+        index
     end
     
    
@@ -71,11 +74,23 @@ classdef GPKdTree < tacopig.gp.GpCore
              this.opts.Method = 'lbfgs';
              this.opts.numDiff = 1; %Derivatives are calculated numerically
              
+             if ~exist('flann_build_index')
+                error(strcat('It looks like you do not have flann installed...\n'...
+                        ,'GPKdTree will not work'));
+             end
+             
+             this.knn_params.algorithm = 'linear';
+             flann_set_distance_type(1);
+             
+            
         end
                 
         
         
         function solve(this)
+        % Since a small covariance matrix will be computed for each query,
+        % there is no need for generating anc cacheing matrices for
+        % inference.
         % Calculates and caches the key matrices required for GP inference
         % e.g. The covariance matrix and its factorisation, the mean
         % function, the negativel log marginal likelihood value
