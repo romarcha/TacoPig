@@ -8,7 +8,9 @@
 function [nlml, nlmlg] = NLML(this, parvec)
             
 
-                
+            if size(parvec,1) > 1
+                parvec = parvec';
+            end
             % Get configuration
             use_svd = strcmpi(this.factorisation, 'svd');
             use_chol = strcmpi(this.factorisation, 'chol');
