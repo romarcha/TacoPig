@@ -61,7 +61,11 @@ function [nlml, nlmlg] = NLML(this, parvec)
                 alpha = (invK*ym');
                 nlml = 0.5*(ym*alpha + sum(log(S0)) + N*log(2*pi));
             elseif (use_chol)
-                L = chol(K, 'lower');
+                try
+                    L = chol(K, 'lower');
+                catch err
+                    error('Error calculating cholesky');
+                end
                 if nargout>1
                     I = eye(size(K));
                     invK  = L'\(L\I);
