@@ -56,7 +56,7 @@ classdef STFixedMean < tacopig.meanfn.STMeanFunc
                 error('tacopig:inputInvalidLength','FixedMean has no hyperparameters!')
             end
             
-            mu = this.value*ones(1,size(X,2));
+            mu = this.value*ones(1,size(X.t,2));
 
         end
         
