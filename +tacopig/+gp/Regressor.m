@@ -112,7 +112,7 @@ classdef Regressor < tacopig.gp.GpCore
         end
 
         
-        function [gaussian, var_full] = query(this, x_star, NumBatches)
+        function [mu_star, var_star, var_full] = query(this, x_star, NumBatches)
         % Query the model after it has been solved
         %
         % [mu_star, var_star, var_full] = Regressor.query(x_star, batches)
@@ -219,9 +219,6 @@ classdef Regressor < tacopig.gp.GpCore
                 end
 
             end
-            gaussian.mean = mu_star;
-            gaussian.var = var_star;
-            gaussian.std = sqrt(var_star);
         end
         
         
