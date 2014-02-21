@@ -27,7 +27,7 @@ classdef Mat5 < tacopig.covfn.CovFunc
     
     methods 
         
-        function this = Mat3() 
+        function this = Mat5() 
             % Mat5 covariance function constructor
             % GP.CovFn = tacopig.covfn.Mat3()
             % Gp.CovFn is an instantiation of the SqExp covariance function class        

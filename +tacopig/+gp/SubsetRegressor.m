@@ -130,15 +130,14 @@ classdef SubsetRegressor < tacopig.gp.GpCore
         end
 
         
-        function [mu_star, var_star, var_full] = query(this, x_star, NumBatches)
+        function [gaussian, var_full] = query(this, x_star, NumBatches)
         % Query the model after it has been solved
         %
         % [mu_star, var_star, var_full] = SubsetRegressor.query(x_star, batches)
         %
         % Inputs:   x_star = test points
         %           NumBatches = the number of batches that the test points are broken up into. Default = 1
-        % Outputs:  mu_star ( predictive mean at the query points)
-        %           var_star ( predictive variance at the query points)
+        % Outputs:  gaussian ( predictive gaussian at query points)
         %           var_ful ( the full covariance matrix between all query points )
         
             % The user can (optionally) split the data into batches)
@@ -224,6 +223,10 @@ classdef SubsetRegressor < tacopig.gp.GpCore
                 end
 
             end
+            gaussian.mean = mu_star;
+            gaussian.var = var_star;
+            gaussian.std = sqrt(var_star);
+
         end
         
         

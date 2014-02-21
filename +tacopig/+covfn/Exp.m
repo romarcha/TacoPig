@@ -61,7 +61,7 @@ classdef Exp < tacopig.covfn.CovFunc
             end
             
             if (length(par)~=D+1)
-                error('tacopig:inputInvalidLength','Wrong number of hyperparameters for NegExp');
+                error('tacopig:inputInvalidLength','Wrong number of hyperparameters for Exp');
             end
             %Compute weighted squared distances:
             w = par(1:D)'.^(-2);

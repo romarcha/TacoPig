@@ -71,8 +71,18 @@ classdef ExpPeriodic < tacopig.covfn.CovFunc
             if (length(par)~=D+1)
                 error('tacopig:inputInvalidLength','Wrong number of hyperparameters for NegExp');
             end
-            X1T = X1';
-            z = X1T(:,ones(1,N2)) - X2(ones(1,N1),:);
+            %Compute squared distances:
+            XX1 = sum(X1.*X1,1);
+            XX2 = sum(X2.*X2,1);
+            X1X2 = X1'*X2;
+            XX1T = XX1';
+            % numerical effects can drive z slightly negative 
+            z = max(0,XX1T(:,ones(1,N2)) + XX2(ones(1,N1),:) - 2*X1X2);
+            z = sqrt(z);
+            
+%            X1T = X1';
+%            z = X1T(:,ones(1,N2)) - X2(ones(1,N1),:);
+            
             K = (par(D+1)^2)*exp(-2*(sin(pi*z./this.period)).^2/par(1));            
         end
         

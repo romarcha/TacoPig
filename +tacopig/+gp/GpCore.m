@@ -22,7 +22,7 @@ classdef GpCore < tacopig.taco
         solve(this);
         
         % Batch querying. (Required method for all GP classes)
-        [mu, var] = query(this, xstar);
+        gaussian = query(this, xstar);
         
         % Objective function for learning. (Required method for all GP classes)
         [o, ograd] = objectfun(theta);

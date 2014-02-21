@@ -133,7 +133,7 @@ classdef STSubsetRegressor < tacopig.gp.GpCore
         end
 
         
-        function [mu_star, var_star, var_full] = query(this, x_star, NumBatches)
+        function [gaussian, var_full] = query(this, x_star, NumBatches)
         % Query the model after it has been solved
         %
         % [mu_star, var_star, var_full] = SubsetRegressor.query(x_star, batches)
@@ -227,6 +227,9 @@ classdef STSubsetRegressor < tacopig.gp.GpCore
                 end
 
             end
+            gaussian.mean = mu_star;
+            gaussian.var = var_star;
+            gaussian.std = sqrt(var_star);
         end
         
         

@@ -122,7 +122,7 @@ classdef STGP < tacopig.gp.GpCore
         end
 
         
-        function [mu_star, var_star, var_full] = query(this, x_star, NumBatches)
+        function [gaussian, var_full] = query(this, x_star, NumBatches)
             % Query the model after it has been solved
             %
             % [mu_star, var_star, var_full] = Regressor.query(x_star, batches)
@@ -131,8 +131,7 @@ classdef STGP < tacopig.gp.GpCore
             %           x_star.s = space locations of points array
             %           x_star.t = timestamps for test data.
             %           NumBatches = the number of batches that the test points are broken up into. Default = 1
-            % Outputs:  mu_star ( predictive mean at the query points)
-            %           var_star ( predictive variance at the query points)
+            % Outputs:  gaussian ( predictive distribution at the query points)
             %           var_ful ( the full covariance matrix between all query points )
         
             % The user can (optionally) split the data into batches)
@@ -235,6 +234,9 @@ classdef STGP < tacopig.gp.GpCore
                 end
 
             end
+            gaussian.mean = mu_star;
+            gaussian.var = var_star;
+            gaussian.std = sqrt(var_star);
         end
         
         

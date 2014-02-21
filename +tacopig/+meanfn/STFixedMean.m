@@ -55,8 +55,12 @@ classdef STFixedMean < tacopig.meanfn.STMeanFunc
             if (numel(par)~=0)
                 error('tacopig:inputInvalidLength','FixedMean has no hyperparameters!')
             end
-            
-            mu = this.value*ones(1,size(X,2));
+            if(isstruct(X))
+                mu = this.value*ones(1,size(X.t,2));
+            else
+                mu = this.value*ones(1,size(X,2));
+            end
+
 
         end
         
