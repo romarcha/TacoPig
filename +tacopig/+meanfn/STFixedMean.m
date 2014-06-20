@@ -61,7 +61,6 @@ classdef STFixedMean < tacopig.meanfn.STMeanFunc
                 mu = this.value*ones(1,size(X,2));
             end
 
-
         end
         
         function g = gradient(this,X,par)

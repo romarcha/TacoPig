@@ -41,7 +41,7 @@ GP.y = y;
 
 % Plug in the components
 GP.MeanFn  = tacopig.meanfn.StationaryMean();
-GP.CovFn   = tacopig.covfn.SqExp();%SqExp();
+GP.CovFn   = tacopig.covfn.Remap(tacopig.covfn.SqExp(),[1 1 2]);
 GP.NoiseFn = tacopig.noisefn.Stationary();
 GP.objective_function = @tacopig.objectivefn.NLML;
 %GP.solver_function = @anneal;
