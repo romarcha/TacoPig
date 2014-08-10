@@ -1,6 +1,11 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                     Gaussian Process Demo Script
 %  Demonstrates GP regression using the taco-pig toolbox on 1-D Data.
+%
+%  Note: when the size of the original dataset increases  importantly
+%        (more than 10000), the convergence of the hyperparameters becomes
+%        harder.
+%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %Add optimization folder
@@ -19,24 +24,25 @@ close all; clear functions; clc;
 
 %% Set up 1-D Data
 % Training Data
-% Rasmussen & Williams "Gaussian Processes for Machine Learning", Fig. 2.5
-X = [-2.1775,-0.9235,0.7502,-5.8868,-2.7995,4.2504,2.4582,6.1426,...
-    -4.0911,-6.3481,1.0004,-4.7591,0.4715,4.8933,4.3248,-3.7461,...
-    -7.3005,5.8177,2.3851,-6.3772];
-y = [1.4121,1.6936,-0.7444,0.2493,0.3978,-1.2755,-2.221,-0.8452,...
-    -1.2232,0.0105,-1.0258,-0.8207,-0.1462,-1.5637,-1.098,-1.1721,...
-    -1.7554,-1.0712,-2.6937,-0.0329];
+% 8000 Noisy samples from an unknown function.
+n_samples = 8000;
+noise_std = 0.1;
+unknown_function = @(x)0.5*(sin(17*(x+0.3)).*((x+0.3).^(1/2))-0.7*cos(30*x));
+X = random('unif',0,1,[1, n_samples]);
+noise = random('Normal',0,noise_std,1,size(X,2));
+y = feval(unknown_function,X)+noise;
+
+n_induced = 40;
 
 n = size(X,2);
 [X id] = sort(X);
 y = y(id);
 
-xstar = linspace(-8, 8, 201); 
 try % pick the induced points. only half as many points in this case.
-    [indxs, induced] = kmeans(X, n/2);
+    [indxs, induced] = kmeans(X, n_induced);
 catch
 %     induced = (rand(10,1)-0.5) *abs(max(X)-min(X))+mean(X) ;
-    induced = [linspace(min(X),max(X),n/2)]';
+    induced = [linspace(min(X),max(X),n_induced)]';
 end
 % we will now compute the regression over these induced points
 
@@ -67,6 +73,7 @@ GP.noisepar = 0.4*ones(1,GP.NoiseFn.npar);
 
 %% Before Learning: Query
 GP.solve(); 
+xstar = linspace(min(X), max(X), 201); 
 [mf, vf] = GP.query(xstar);
 sf  = sqrt(vf);
 
