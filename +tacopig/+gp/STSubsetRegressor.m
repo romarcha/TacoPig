@@ -154,9 +154,9 @@ classdef STSubsetRegressor < tacopig.gp.GpCore
             this.check();
             
             % Get input lengths
-            N = size(this.X,2);
-            m = size(this.XI,2);
-            nx = size(x_star,2);
+            N = size(this.X.s,2);
+            m = size(this.XI.s,2);
+            nx = size(x_star.s,2);
             
             if abs(round(NumBatches)-NumBatches)>1e-16
                 error('tacopig:inputInvalidType', 'Batches must be an integer');
@@ -215,9 +215,12 @@ classdef STSubsetRegressor < tacopig.gp.GpCore
                     fprintf('%d to %d...\n',L, R);
                 end
                 
+                % The test set for this batch
+                x_star_active = struct('s',x_star.s(:,LR),'t',x_star.t(:,LR));
+                
                 % Compute the predictive mean, using induced points
                 % k_m(x*) in book.
-                ks = this.CovFn.eval(this.XI,x_star(:,LR),this)';
+                ks = this.CovFn.eval(this.XI,x_star_active,this)';
                 %Compute the posterior mean using palpha.
                 mu_star(LR) = mu_0(LR) + (ks*this.palpha)';
 
@@ -345,23 +348,41 @@ classdef STSubsetRegressor < tacopig.gp.GpCore
         function check(this)
         % Returns error if a property of the GP class has been initialised incorrectly
         % Regressor.check()
+        % Assuming spatial temporal input
         
-            [D,N] = size(this.X);
+            %Check if X is a struct with X.t and X.s
+            if(~isfield(this.X,'s') || ~isfield(this.X,'t'))
+                error('X must be a struct with space and time.');
+            end
+            
+            %Check that XI (the induced points) are a space time input
+            if(~isfield(this.XI,'s') || ~isfield(this.XI,'t'))
+                error('X must be a struct with space and time.');
+            end
+            
+            %Check that data has one temporal dimension
+            if(size(this.X.t,1) ~= 1)
+                error('Temporal dimension should be one.')
+            end
+            
             use_svd = strcmpi(this.factorisation, 'svd');
             use_chol = strcmpi(this.factorisation, 'chol');
             if ((use_svd==0)&&(use_chol==0))
                 error('tacopig:badConfiguration', 'Matrix factorisation should either be SVD or CHOL\n');
-            elseif ~isa(this.MeanFn,'tacopig.meanfn.MeanFunc')
-                error('tacopig:badConfiguration', 'Invalid Mean Function\n');
-            elseif ~isa(this.CovFn,'tacopig.covfn.CovFunc')
-                error('tacopig:badConfiguration', 'Invalid Covariance Function\n');
+            elseif ~isa(this.MeanFn,'tacopig.meanfn.STMeanFunc')
+                error('tacopig:badConfiguration', 'Invalid Mean Function, it must be a Space Time Mean Function\n');
+            elseif ~isa(this.CovFn,'tacopig.covfn.STCovFunc')
+                error('tacopig:badConfiguration', 'Invalid Covariance Function, it must be a Space Time Covariance Function.\n');
             elseif (size(this.y,1) ~= 1)
                 error('tacopig:dimMismatch', 'Y is transposed?\n');
             elseif (size(this.covpar,1) > 1)
                 error('tacopig:dimMismatch', 'Covpar is transposed?\n');
             end 
-            ncovpar = this.CovFn.npar(D);
-            nmeanpar = this.MeanFn.npar(D);
+            
+            [spatial_dimensions,~] = size(this.X.s);
+            
+            ncovpar = this.CovFn.npar(spatial_dimensions);
+            nmeanpar = this.MeanFn.npar(spatial_dimensions);
             if (size(this.covpar,2) ~= ncovpar)
                 error('tacopig:inputInvalidLength', 'covpar is the wrong length.');
             elseif (size(this.meanpar,1) > 1)

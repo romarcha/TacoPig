@@ -5,7 +5,8 @@
 %  Note: when the size of the original dataset increases  importantly
 %        (more than 10000), the convergence of the hyperparameters becomes
 %        harder.
-%
+%        when the noise is zero, the matrix stops being positive
+%        semidefinite and the inversion does not work.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %Add optimization folder
@@ -26,17 +27,13 @@ close all; clear functions; clc;
 % Training Data
 % 8000 Noisy samples from an unknown function.
 n_samples = 8000;
-noise_std = 0.1;
+noise_std = 0.01;
 unknown_function = @(x)0.5*(sin(17*(x+0.3)).*((x+0.3).^(1/2))-0.7*cos(30*x));
 X = random('unif',0,1,[1, n_samples]);
 noise = random('Normal',0,noise_std,1,size(X,2));
 y = feval(unknown_function,X)+noise;
 
 n_induced = 40;
-
-n = size(X,2);
-[X id] = sort(X);
-y = y(id);
 
 try % pick the induced points. only half as many points in this case.
     [indxs, induced] = kmeans(X, n_induced);

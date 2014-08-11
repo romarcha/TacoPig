@@ -1,7 +1,11 @@
 % Gaussian Process LMLG function for subset of regressors
 function [nlml, nlmlg] = SR_LMLG(this, parvec)
     % unpack the hyperparameter vector
-    D = size(this.X,1);
+    if(~isstruct(this.X))
+        D = size(this.X,1);
+    else
+        D = size(this.X.s,1);
+    end
     ncovpar = this.CovFn.npar(D);
     nmeanpar = this.MeanFn.npar(D);
     nnoisepar = this.NoiseFn.npar;
@@ -18,20 +22,31 @@ function [nlml, nlmlg] = SR_LMLG(this, parvec)
     % add a tiny noise to KI to keep positive definiteness
     eps = 1e-6*sum(diag(KI)); % or could use min etc
     KI  = KI + eps*eye(size(KI));
-
-    N = size(this.X,2);  % number of training points
-    m = size(this.XI,2); % number of induced points
+    
+    if(~isstruct(this.X))
+        N = size(this.X,2);  % number of training points
+        m = size(this.XI,2); % number of induced points                
+    else
+        N = size(this.X.s,2);  % number of training points
+        m = size(this.XI.s,2); % number of induced points        
+    end
     noise = this.noisepar;
     
     ym = (this.y - mu);
     
-    
-    L     = chol(KI,'lower');
+    [L,success] = chol(KI,'lower');
+    if(success ~= 0)
+        error('Matrix KI is not positive semidefinite.')
+    end
     V     = L\KIX;
-    
-    
+        
     pK    = V*V'+(noise^2)*eye(m); %pseudoK
-    Lm    = chol(pK,'lower');
+
+    %chol with two outputs never produces an error
+    [Lm,success]    = chol(pK,'lower');
+    if(success ~= 0)
+        error('Matrix pK is not positive semidefinite.')
+    end
     b     = (Lm\V)*ym';
 
     % Compute the log marginal likelihood
